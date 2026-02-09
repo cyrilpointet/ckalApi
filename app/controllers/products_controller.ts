@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import Product from '#models/product'
 import {
   indexProductQuerySchema,
@@ -22,10 +23,10 @@ export default class ProductsController {
       query.whereILike('name', `%${name}%`)
     }
     if (from) {
-      query.where('created_at', '>=', from.toISOString())
+      query.where('consumed_at', '>=', from.toISOString())
     }
     if (to) {
-      query.where('created_at', '<=', to.toISOString())
+      query.where('consumed_at', '<=', to.toISOString())
     }
     if (kcalMin !== undefined) {
       query.where('kcal', '>=', kcalMin)
@@ -54,7 +55,10 @@ export default class ProductsController {
 
     const product = await Product.create({
       userId: user.id,
-      ...data,
+      name: data.name,
+      description: data.description,
+      kcal: data.kcal,
+      consumedAt: DateTime.fromJSDate(data.consumedAt),
     })
 
     return response.created(product)
@@ -80,7 +84,11 @@ export default class ProductsController {
     }
 
     const data = updateProductSchema.parse(request.all())
-    product.merge(data)
+    const { consumedAt, ...rest } = data
+    product.merge(rest)
+    if (consumedAt) {
+      product.consumedAt = DateTime.fromJSDate(consumedAt)
+    }
     await product.save()
 
     return product

@@ -15,6 +15,7 @@ export default class extends BaseSchema {
       table.string('name', 255).notNullable()
       table.text('description').nullable()
       table.integer('kcal').notNullable()
+      table.timestamp('consumed_at', { useTz: true }).notNullable()
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
     })
