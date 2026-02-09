@@ -1,5 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeCreate, column } from '@adonisjs/lucid/orm'
+import { BaseModel, beforeCreate, column, hasMany } from '@adonisjs/lucid/orm'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
+import Weight from '#models/weight'
+import DailyCalorie from '#models/daily_calorie'
+import Product from '#models/product'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import hash from '@adonisjs/core/services/hash'
@@ -35,6 +39,15 @@ export default class User extends AuthFinder(BaseModel) {
   declare updatedAt: DateTime
 
   static accessTokens = DbAccessTokensProvider.forModel(User)
+
+  @hasMany(() => Weight)
+  declare weights: HasMany<typeof Weight>
+
+  @hasMany(() => DailyCalorie)
+  declare dailyCalories: HasMany<typeof DailyCalorie>
+
+  @hasMany(() => Product)
+  declare products: HasMany<typeof Product>
 
   @beforeCreate()
   static assignUuid(user: User) {
