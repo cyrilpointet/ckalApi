@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 export const indexProductQuerySchema = z.object({
-  sort: z.enum(['name', '-name', 'created_at', '-created_at', 'kcal', '-kcal']).optional().default('-created_at'),
+  sort: z
+    .enum(['name', '-name', 'created_at', '-created_at', 'kcal', '-kcal'])
+    .optional()
+    .default('-created_at'),
   name: z.string().optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
@@ -13,13 +16,13 @@ export const indexProductQuerySchema = z.object({
 
 export const createProductSchema = z.object({
   name: z.string().min(1).max(255),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   kcal: z.number().int().nonnegative(),
 })
 
 export const updateProductSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   kcal: z.number().int().nonnegative().optional(),
 })
 
