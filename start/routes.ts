@@ -14,6 +14,7 @@ const AuthController = () => import('#controllers/auth_controller')
 const WeightsController = () => import('#controllers/weights_controller')
 const DailyCaloriesController = () => import('#controllers/daily_calories_controller')
 const ProductsController = () => import('#controllers/products_controller')
+const LlmController = () => import('#controllers/llm_controller')
 
 router.get('/', async () => {
   return {
@@ -60,4 +61,11 @@ router
     router.delete('/:id', [ProductsController, 'destroy'])
   })
   .prefix('products')
+  .use(middleware.auth())
+
+router
+  .group(() => {
+    router.post('kcalculator', [LlmController, 'kcalculator'])
+  })
+  .prefix('llm')
   .use(middleware.auth())
