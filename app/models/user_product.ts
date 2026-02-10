@@ -3,24 +3,22 @@ import { BaseModel, beforeCreate, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { randomUUID } from 'node:crypto'
 import User from '#models/user'
+import Product from '#models/product'
 
-export default class Product extends BaseModel {
+export default class UserProduct extends BaseModel {
   static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
   declare id: string
 
   @column()
-  declare createdBy: string
+  declare userId: string
 
   @column()
-  declare name: string
+  declare productId: string
 
-  @column()
-  declare description: string | null
-
-  @column()
-  declare kcal: number
+  @column.dateTime()
+  declare consumedAt: DateTime
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -28,11 +26,14 @@ export default class Product extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => User, { foreignKey: 'createdBy' })
+  @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
+  @belongsTo(() => Product)
+  declare product: BelongsTo<typeof Product>
+
   @beforeCreate()
-  static assignUuid(product: Product) {
-    product.id = randomUUID()
+  static assignUuid(userProduct: UserProduct) {
+    userProduct.id = randomUUID()
   }
 }

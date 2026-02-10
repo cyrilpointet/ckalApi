@@ -4,6 +4,7 @@ import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Weight from '#models/weight'
 import DailyCalorie from '#models/daily_calorie'
 import Product from '#models/product'
+import UserProduct from '#models/user_product'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import hash from '@adonisjs/core/services/hash'
@@ -46,8 +47,11 @@ export default class User extends AuthFinder(BaseModel) {
   @hasMany(() => DailyCalorie)
   declare dailyCalories: HasMany<typeof DailyCalorie>
 
-  @hasMany(() => Product)
+  @hasMany(() => Product, { foreignKey: 'createdBy' })
   declare products: HasMany<typeof Product>
+
+  @hasMany(() => UserProduct)
+  declare consumedProducts: HasMany<typeof UserProduct>
 
   @beforeCreate()
   static assignUuid(user: User) {

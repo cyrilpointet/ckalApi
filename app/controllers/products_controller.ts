@@ -1,5 +1,4 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { DateTime } from 'luxon'
 import Product from '#models/product'
 import {
   indexProductQuerySchema,
@@ -8,25 +7,21 @@ import {
 } from '#validators/product_validator'
 
 export default class ProductsController {
-  async index({ auth, request }: HttpContext) {
-    const user = auth.use('api').getUserOrFail()
-    const { sort, name, from, to, kcalMin, kcalMax, take, skip } =
-      indexProductQuerySchema.parse(request.qs())
+  async index({ request }: HttpContext) {
+    const { sort, name, from, to, kcalMin, kcalMax, take, skip } = indexProductQuerySchema.parse(
+      request.qs()
+    )
 
     const query = Product.query()
-
-    if (!user.isSuperadmin) {
-      query.where('userId', user.id)
-    }
 
     if (name) {
       query.whereILike('name', `%${name}%`)
     }
     if (from) {
-      query.where('consumed_at', '>=', from.toISOString())
+      query.where('updated_at', '>=', from.toISOString())
     }
     if (to) {
-      query.where('consumed_at', '<=', to.toISOString())
+      query.where('updated_at', '<=', to.toISOString())
     }
     if (kcalMin !== undefined) {
       query.where('kcal', '>=', kcalMin)
@@ -54,41 +49,27 @@ export default class ProductsController {
     const data = createProductSchema.parse(request.all())
 
     const product = await Product.create({
-      userId: user.id,
-      name: data.name,
-      description: data.description,
-      kcal: data.kcal,
-      consumedAt: DateTime.fromJSDate(data.consumedAt),
+      createdBy: user.id,
+      ...data,
     })
 
     return response.created(product)
   }
 
-  async show({ auth, params, response }: HttpContext) {
-    const user = auth.use('api').getUserOrFail()
-    const product = await Product.findOrFail(params.id)
-
-    if (product.userId !== user.id && !user.isSuperadmin) {
-      return response.forbidden({ message: 'Access denied' })
-    }
-
-    return product
+  async show({ params }: HttpContext) {
+    return Product.findOrFail(params.id)
   }
 
   async update({ auth, params, request, response }: HttpContext) {
     const user = auth.use('api').getUserOrFail()
     const product = await Product.findOrFail(params.id)
 
-    if (product.userId !== user.id && !user.isSuperadmin) {
+    if (product.createdBy !== user.id && !user.isSuperadmin) {
       return response.forbidden({ message: 'Access denied' })
     }
 
     const data = updateProductSchema.parse(request.all())
-    const { consumedAt, ...rest } = data
-    product.merge(rest)
-    if (consumedAt) {
-      product.consumedAt = DateTime.fromJSDate(consumedAt)
-    }
+    product.merge(data)
     await product.save()
 
     return product
@@ -98,7 +79,7 @@ export default class ProductsController {
     const user = auth.use('api').getUserOrFail()
     const product = await Product.findOrFail(params.id)
 
-    if (product.userId !== user.id && !user.isSuperadmin) {
+    if (product.createdBy !== user.id && !user.isSuperadmin) {
       return response.forbidden({ message: 'Access denied' })
     }
 
