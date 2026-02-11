@@ -16,6 +16,7 @@ const DailyCaloriesController = () => import('#controllers/daily_calories_contro
 const ProductsController = () => import('#controllers/products_controller')
 const ConsumedProductsController = () => import('#controllers/consumed_products_controller')
 const LlmController = () => import('#controllers/llm_controller')
+const OffController = () => import('#controllers/off_controller')
 
 router.get('/', async () => {
   return {
@@ -80,4 +81,11 @@ router
     router.post('kcalculator', [LlmController, 'kcalculator'])
   })
   .prefix('llm')
+  .use(middleware.auth())
+
+router
+  .group(() => {
+    router.get('/:barcode', [OffController, 'show'])
+  })
+  .prefix('off')
   .use(middleware.auth())
