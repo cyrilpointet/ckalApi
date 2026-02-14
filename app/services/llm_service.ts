@@ -1,9 +1,12 @@
 import env from '#start/env'
-import { OpenRouter } from '@openrouter/sdk'
+import { GoogleGenAI } from '@google/genai'
+import logger from '@adonisjs/core/services/logger'
 import { z } from 'zod'
-import { nutritionAnalyser, textAnalyser } from './llm_prompts.js'
+import { imageNutritionAnalyser, nutritionAnalyser, textAnalyser } from './llm_prompts.js'
+import { pictureNutritionSchema } from '#validators/llm_validator'
 
-const DEFAULT_LLM_MODEL = env.get('DEFAULT_LLM_MODEL') || 'tngtech/deepseek-r1t2-chimera:free'
+const DEFAULT_LLM_MODEL = env.get('DEFAULT_LLM_MODEL') || 'gemini-2.5-flash'
+const DEFAULT_IMAGE_ANALYZER = env.get('DEFAULT_IMAGE_ANALYZER') || 'gemini-2.5-flash'
 
 const classificationSchema = z.object({
   is_food: z.boolean(),
@@ -28,52 +31,83 @@ function extractJson(content: string): string {
   return cleaned
 }
 
+type LlmContents =
+  | string
+  | Array<{ inlineData?: { mimeType: string; data: string }; text?: string }>
+
 export default class LlmService {
-  private client: OpenRouter
+  private ai: GoogleGenAI
 
   constructor() {
-    this.client = new OpenRouter({
-      apiKey: env.get('OPENROUTER_API_KEY'),
-    })
+    this.ai = new GoogleGenAI({ apiKey: env.get('GOOGLE_AI_API_KEY') })
+  }
+
+  private async callLlm(options: {
+    model: string
+    systemPrompt: string
+    contents: LlmContents
+  }): Promise<string> {
+    try {
+      const response = await this.ai.models.generateContent({
+        model: options.model,
+        contents: options.contents,
+        config: {
+          systemInstruction: options.systemPrompt,
+          responseMimeType: 'application/json',
+        },
+      })
+      return response.text ?? ''
+    } catch (error) {
+      logger.error({ err: error, model: options.model }, 'LLM call failed')
+      throw error
+    }
   }
 
   public async processMealAnalysis(text: string) {
-    // 1. Vérification (Modèle rapide/pas cher)
-    const check = await this.client.chat.send({
-      chatGenerationParams: {
-        model: DEFAULT_LLM_MODEL,
-        messages: [
-          { role: 'system', content: textAnalyser },
-          { role: 'user', content: `Est-ce un aliment ? : "${text}"` },
-        ],
-        responseFormat: { type: 'json_object' },
-      },
+    // 1. Vérification (classification)
+    const checkRaw = await this.callLlm({
+      model: DEFAULT_LLM_MODEL,
+      systemPrompt: textAnalyser,
+      contents: `Est-ce un aliment ? : "${text}"`,
     })
 
-    const isFood = classificationSchema.parse(
-      JSON.parse(extractJson(check.choices[0].message.content as string))
-    )
+    const isFood = classificationSchema.parse(JSON.parse(extractJson(checkRaw)))
 
     if (!isFood.is_food) {
       throw new Error('NOT_FOOD_CONTENT')
     }
 
-    // 2. Estimation (Modèle puissant)
-    const analysis = await this.client.chat.send({
-      chatGenerationParams: {
-        model: DEFAULT_LLM_MODEL,
-        messages: [
-          { role: 'system', content: nutritionAnalyser },
-          { role: 'user', content: `Analyse nutritionnelle de : "${text}"` },
-        ],
-        responseFormat: { type: 'json_object' },
-      },
+    // 2. Estimation nutritionnelle
+    const analysisRaw = await this.callLlm({
+      model: DEFAULT_LLM_MODEL,
+      systemPrompt: nutritionAnalyser,
+      contents: `Analyse nutritionnelle de : "${text}"`,
     })
 
-    console.log('Nutrition analysis response:', analysis.choices)
+    return nutritionSchema.parse(JSON.parse(extractJson(analysisRaw)))
+  }
 
-    return nutritionSchema.parse(
-      JSON.parse(extractJson(analysis.choices[0].message.content as string))
-    )
+  public async processPictureAnalysis(base64DataUrl: string) {
+    const match = base64DataUrl.match(/^data:(.+?);base64,(.+)$/)
+    const mimeType = match?.[1] ?? 'image/jpeg'
+    const data = match?.[2] ?? base64DataUrl
+
+    const analysisRaw = await this.callLlm({
+      model: DEFAULT_IMAGE_ANALYZER,
+      systemPrompt: imageNutritionAnalyser,
+      contents: [
+        {
+          text: 'Analyse cette image et estime les informations nutritionnelles.',
+        },
+        {
+          inlineData: {
+            mimeType,
+            data,
+          },
+        },
+      ],
+    })
+
+    return pictureNutritionSchema.parse(JSON.parse(extractJson(analysisRaw)))
   }
 }

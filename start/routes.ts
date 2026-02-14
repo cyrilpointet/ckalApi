@@ -79,6 +79,7 @@ router
 router
   .group(() => {
     router.post('kcalculator', [LlmController, 'kcalculator'])
+    router.post('picture-kcalculator', [LlmController, 'pictureKcalculator'])
   })
   .prefix('llm')
   .use(middleware.auth())

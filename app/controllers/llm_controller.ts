@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import LlmService from '#services/llm_service'
-import { kcalculatorSchema } from '#validators/llm_validator'
+import { kcalculatorSchema, pictureKcalculatorSchema } from '#validators/llm_validator'
 
 @inject()
 export default class LlmController {
@@ -17,5 +17,10 @@ export default class LlmController {
       }
       throw error
     }
+  }
+
+  async pictureKcalculator({ request }: HttpContext) {
+    const { image } = pictureKcalculatorSchema.parse(request.all())
+    return await this.llmService.processPictureAnalysis(image)
   }
 }

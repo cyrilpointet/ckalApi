@@ -23,4 +23,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_USER: Env.schema.string(),
   DB_PASSWORD: Env.schema.string(),
   DB_DATABASE: Env.schema.string(),
+
+  GOOGLE_AI_API_KEY: Env.schema.string(),
 })

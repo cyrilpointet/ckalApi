@@ -8,9 +8,8 @@ import {
 
 export default class ProductsController {
   async index({ request }: HttpContext) {
-    const { sort, name, from, to, kcalMin, kcalMax, take, skip } = indexProductQuerySchema.parse(
-      request.qs()
-    )
+    const { sort, name, from, to, kcalMin, kcalMax, isRecipe, take, skip } =
+      indexProductQuerySchema.parse(request.qs())
 
     const query = Product.query()
 
@@ -29,6 +28,12 @@ export default class ProductsController {
     if (kcalMax !== undefined) {
       query.where('kcal', '<=', kcalMax)
     }
+    if (isRecipe !== undefined) {
+      query.where('is_recipe', isRecipe)
+    }
+
+    const countResult = await query.clone().count('* as total').first()
+    const totalCount = Number(countResult?.$extras.total ?? 0)
 
     const direction = sort.startsWith('-') ? 'desc' : 'asc'
     const column = sort.replace(/^-/, '')
@@ -41,7 +46,9 @@ export default class ProductsController {
       query.limit(take)
     }
 
-    return query
+    const data = await query
+
+    return { data, totalCount }
   }
 
   async store({ auth, request, response }: HttpContext) {
