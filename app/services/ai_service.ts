@@ -1,11 +1,21 @@
+/* eslint-disable prettier/prettier */
 import env from '#start/env'
 import { GoogleGenAI } from '@google/genai'
 import logger from '@adonisjs/core/services/logger'
 import { z } from 'zod'
-import { imageNutritionAnalyser, nutritionAnalyser, textAnalyser } from './llm_prompts.js'
-import { pictureNutritionSchema } from '#validators/llm_validator'
+import {
+  classificationUserPrompt,
+  imageAnalysisUserPrompt,
+  imageNutritionAnalyser,
+  nutritionAnalyser,
+  nutritionAnalysisUserPrompt,
+  recipeGenerator,
+  recipeUserPrompt,
+  textAnalyser,
+} from './ai_prompts.js'
+import { pictureNutritionSchema, recipeResponseSchema } from '#validators/ai_validator'
 
-const DEFAULT_LLM_MODEL = env.get('DEFAULT_LLM_MODEL') || 'gemini-2.5-flash'
+const DEFAULT_AI_MODEL = env.get('DEFAULT_AI_MODEL') || 'gemini-2.5-flash'
 const DEFAULT_IMAGE_ANALYZER = env.get('DEFAULT_IMAGE_ANALYZER') || 'gemini-2.5-flash'
 
 const classificationSchema = z.object({
@@ -31,21 +41,21 @@ function extractJson(content: string): string {
   return cleaned
 }
 
-type LlmContents =
+type AiContents =
   | string
   | Array<{ inlineData?: { mimeType: string; data: string }; text?: string }>
 
-export default class LlmService {
+export default class AiService {
   private ai: GoogleGenAI
 
   constructor() {
     this.ai = new GoogleGenAI({ apiKey: env.get('GOOGLE_AI_API_KEY') })
   }
 
-  private async callLlm(options: {
+  private async callAi(options: {
     model: string
     systemPrompt: string
-    contents: LlmContents
+    contents: AiContents
   }): Promise<string> {
     try {
       const response = await this.ai.models.generateContent({
@@ -56,19 +66,36 @@ export default class LlmService {
           responseMimeType: 'application/json',
         },
       })
+      console.log('AI response:', response)
       return response.text ?? ''
-    } catch (error) {
-      logger.error({ err: error, model: options.model }, 'LLM call failed')
+    } catch (error: any) {
+      console.error('AI call error:', error)
+      if (error?.status === 429) {
+        let retryDelay: string | null = null
+        try {
+          const parsed = JSON.parse(error.message)
+          const retryInfo = parsed.error?.details?.find(
+            (d: any) => d['@type']?.includes('RetryInfo')
+          )
+          if (retryInfo?.retryDelay) {
+            retryDelay = retryInfo.retryDelay
+          }
+        } catch {}
+        const err = new Error('AI_RATE_LIMIT') as Error & { retryDelay: string | null }
+        err.retryDelay = retryDelay
+        throw err
+      }
+      logger.error({ err: error, model: options.model }, 'AI call failed')
       throw error
     }
   }
 
   public async processMealAnalysis(text: string) {
     // 1. Vérification (classification)
-    const checkRaw = await this.callLlm({
-      model: DEFAULT_LLM_MODEL,
+    const checkRaw = await this.callAi({
+      model: DEFAULT_AI_MODEL,
       systemPrompt: textAnalyser,
-      contents: `Est-ce un aliment ? : "${text}"`,
+      contents: classificationUserPrompt(text),
     })
 
     const isFood = classificationSchema.parse(JSON.parse(extractJson(checkRaw)))
@@ -78,10 +105,10 @@ export default class LlmService {
     }
 
     // 2. Estimation nutritionnelle
-    const analysisRaw = await this.callLlm({
-      model: DEFAULT_LLM_MODEL,
+    const analysisRaw = await this.callAi({
+      model: DEFAULT_AI_MODEL,
       systemPrompt: nutritionAnalyser,
-      contents: `Analyse nutritionnelle de : "${text}"`,
+      contents: nutritionAnalysisUserPrompt(text),
     })
 
     return nutritionSchema.parse(JSON.parse(extractJson(analysisRaw)))
@@ -92,12 +119,12 @@ export default class LlmService {
     const mimeType = match?.[1] ?? 'image/jpeg'
     const data = match?.[2] ?? base64DataUrl
 
-    const analysisRaw = await this.callLlm({
+    const analysisRaw = await this.callAi({
       model: DEFAULT_IMAGE_ANALYZER,
       systemPrompt: imageNutritionAnalyser,
       contents: [
         {
-          text: 'Analyse cette image et estime les informations nutritionnelles.',
+          text: imageAnalysisUserPrompt,
         },
         {
           inlineData: {
@@ -109,5 +136,19 @@ export default class LlmService {
     })
 
     return pictureNutritionSchema.parse(JSON.parse(extractJson(analysisRaw)))
+  }
+
+  public async processRecipeGeneration(input: {
+    description?: string
+    ingredients?: string[]
+    maxKcal?: number
+  }) {
+    const raw = await this.callAi({
+      model: DEFAULT_AI_MODEL,
+      systemPrompt: recipeGenerator,
+      contents: recipeUserPrompt(input),
+    })
+
+    return recipeResponseSchema.parse(JSON.parse(extractJson(raw)))
   }
 }

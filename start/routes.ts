@@ -15,7 +15,7 @@ const WeightsController = () => import('#controllers/weights_controller')
 const DailyCaloriesController = () => import('#controllers/daily_calories_controller')
 const ProductsController = () => import('#controllers/products_controller')
 const ConsumedProductsController = () => import('#controllers/consumed_products_controller')
-const LlmController = () => import('#controllers/llm_controller')
+const AiController = () => import('#controllers/ai_controller')
 const OffController = () => import('#controllers/off_controller')
 
 router.get('/', async () => {
@@ -78,10 +78,11 @@ router
 
 router
   .group(() => {
-    router.post('kcalculator', [LlmController, 'kcalculator'])
-    router.post('picture-kcalculator', [LlmController, 'pictureKcalculator'])
+    router.post('kcalculator', [AiController, 'kcalculator'])
+    router.post('picture-kcalculator', [AiController, 'pictureKcalculator'])
+    router.post('recipe', [AiController, 'generateRecipe'])
   })
-  .prefix('llm')
+  .prefix('ai')
   .use(middleware.auth())
 
 router

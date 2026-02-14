@@ -16,3 +16,15 @@ export const pictureNutritionSchema = z.object({
 })
 
 export type PictureNutrition = z.infer<typeof pictureNutritionSchema>
+
+export const recipeRequestSchema = z.object({
+  description: z.string().optional(),
+  ingredients: z.array(z.string()).optional(),
+  maxKcal: z.number().positive().optional(),
+})
+
+export const recipeResponseSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  kCal: z.number(),
+})

@@ -10,7 +10,7 @@
 ## Project Structure
 - `app/controllers/`: HTTP Controllers (prefer resource-based naming).
 - `app/models/`: Lucid Models (CamelCase properties, UUID as primary key).
-- `app/services/`: Business Logic (LlmService, OpenFoodFactsService).
+- `app/services/`: Business Logic (AiService, OpenFoodFactsService).
 - `app/validators/`: Zod schemas (Centralize reusable schemas here).
 - `database/migrations/`: Database schema definitions.
 
