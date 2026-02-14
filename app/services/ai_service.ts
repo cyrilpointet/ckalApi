@@ -66,10 +66,8 @@ export default class AiService {
           responseMimeType: 'application/json',
         },
       })
-      console.log('AI response:', response)
       return response.text ?? ''
     } catch (error: any) {
-      console.error('AI call error:', error)
       if (error?.status === 429) {
         let retryDelay: string | null = null
         try {

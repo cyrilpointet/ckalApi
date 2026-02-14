@@ -17,6 +17,9 @@ export default class UserProduct extends BaseModel {
   @column()
   declare productId: string
 
+  @column()
+  declare quantity: number
+
   @column.dateTime()
   declare consumedAt: DateTime
 

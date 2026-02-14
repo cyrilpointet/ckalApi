@@ -15,10 +15,12 @@ export const indexUserProductQuerySchema = z.object({
 export const createUserProductSchema = z.object({
   productId: z.string().uuid(),
   consumedAt: z.coerce.date(),
+  quantity: z.number().int().positive().default(1),
 })
 
 export const updateUserProductSchema = z.object({
   consumedAt: z.coerce.date().optional(),
+  quantity: z.number().int().positive().optional(),
 })
 
 export type CreateUserProductData = z.infer<typeof createUserProductSchema>

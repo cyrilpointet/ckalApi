@@ -27,7 +27,7 @@ export const recipeGenerator =
   '(description souhaitée, ingrédients disponibles, limite de calories). ' +
   'La recette doit être facile à réaliser et rapide à préparer. ' +
   'Les proportions et les calories doivent être calculées pour 1 seule personne. ' +
-  'La description doit être formatée en markdown, commencer par la liste des ingrédients avec leurs quantités, suivie des étapes de préparation. ' +
+  'La description doit être formatée en markdown avec titres et sous-titres, commencer par la liste des ingrédients avec leurs quantités, suivie des étapes de préparation. ' +
   'Réponds UNIQUEMENT avec ce format JSON : ' +
   '{"name": "string (nom de la recette)", "description": "string (liste des ingrédients puis étapes de préparation)", ' +
   '"kCal": number (estimation des calories totales pour 1 personne)}.'

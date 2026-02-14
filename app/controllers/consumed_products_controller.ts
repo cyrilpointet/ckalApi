@@ -58,6 +58,7 @@ export default class ConsumedProductsController {
       userId: user.id,
       productId: data.productId,
       consumedAt: DateTime.fromJSDate(data.consumedAt),
+      quantity: data.quantity,
     })
 
     await userProduct.load('product')
@@ -87,6 +88,9 @@ export default class ConsumedProductsController {
     const data = updateUserProductSchema.parse(request.all())
     if (data.consumedAt) {
       userProduct.consumedAt = DateTime.fromJSDate(data.consumedAt)
+    }
+    if (data.quantity !== undefined) {
+      userProduct.quantity = data.quantity
     }
     await userProduct.save()
 
