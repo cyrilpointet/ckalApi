@@ -30,7 +30,7 @@ export const recipeGenerator =
   'La description doit être formatée en markdown avec titres et sous-titres, commencer par la liste des ingrédients avec leurs quantités, suivie des étapes de préparation. ' +
   'Réponds UNIQUEMENT avec ce format JSON : ' +
   '{"name": "string (nom de la recette)", "description": "string (liste des ingrédients puis étapes de préparation)", ' +
-  '"kCal": number (estimation des calories totales pour 1 personne)}.'
+  '"total_calories": number (estimation des calories totales pour 1 personne)}.'
 
 export const recipeUserPrompt = (opts: {
   description?: string

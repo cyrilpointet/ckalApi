@@ -26,5 +26,5 @@ export const recipeRequestSchema = z.object({
 export const recipeResponseSchema = z.object({
   name: z.string(),
   description: z.string(),
-  kCal: z.number(),
+  total_calories: z.number(),
 })
