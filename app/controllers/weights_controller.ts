@@ -41,10 +41,22 @@ export default class WeightsController {
     const user = auth.use('api').getUserOrFail()
     const data = createWeightSchema.parse(request.all())
 
+    const dateTime = DateTime.fromJSDate(data.date)
+    const existing = await Weight.query()
+      .where('userId', user.id)
+      .where('date', dateTime.toISODate()!)
+      .first()
+
+    if (existing) {
+      existing.value = data.value
+      await existing.save()
+      return existing
+    }
+
     const weight = await Weight.create({
       userId: user.id,
       value: data.value,
-      date: DateTime.fromJSDate(data.date),
+      date: dateTime,
     })
 
     return response.created(weight)
