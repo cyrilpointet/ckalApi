@@ -7,11 +7,16 @@ import {
 } from '#validators/product_validator'
 
 export default class ProductsController {
-  async index({ request }: HttpContext) {
+  async index({ auth, request }: HttpContext) {
+    const user = auth.use('api').getUserOrFail()
     const { sort, name, from, to, kcalMin, kcalMax, isRecipe, take, skip } =
       indexProductQuerySchema.parse(request.qs())
 
     const query = Product.query()
+
+    if (!user.isSuperadmin) {
+      query.where('created_by', user.id)
+    }
 
     if (name) {
       query.whereILike('name', `%${name}%`)
@@ -63,8 +68,15 @@ export default class ProductsController {
     return response.created(product)
   }
 
-  async show({ params }: HttpContext) {
-    return Product.findOrFail(params.id)
+  async show({ auth, params, response }: HttpContext) {
+    const user = auth.use('api').getUserOrFail()
+    const product = await Product.findOrFail(params.id)
+
+    if (product.createdBy !== user.id && !user.isSuperadmin) {
+      return response.forbidden({ message: 'Access denied' })
+    }
+
+    return product
   }
 
   async update({ auth, params, request, response }: HttpContext) {
