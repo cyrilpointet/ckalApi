@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import Weight from '#models/weight'
 import {
   indexWeightQuerySchema,
@@ -18,13 +19,13 @@ export default class WeightsController {
     }
 
     if (from) {
-      query.where('created_at', '>=', from.toISOString())
+      query.where('date', '>=', from.toISOString())
     }
     if (to) {
-      query.where('created_at', '<=', to.toISOString())
+      query.where('date', '<=', to.toISOString())
     }
 
-    query.orderBy('created_at', sort)
+    query.orderBy('date', sort)
 
     if (skip !== undefined) {
       query.offset(skip)
@@ -43,6 +44,7 @@ export default class WeightsController {
     const weight = await Weight.create({
       userId: user.id,
       value: data.value,
+      date: DateTime.fromJSDate(data.date),
     })
 
     return response.created(weight)
@@ -68,7 +70,12 @@ export default class WeightsController {
     }
 
     const data = updateWeightSchema.parse(request.all())
-    weight.merge(data)
+    if (data.value !== undefined) {
+      weight.value = data.value
+    }
+    if (data.date) {
+      weight.date = DateTime.fromJSDate(data.date)
+    }
     await weight.save()
 
     return weight

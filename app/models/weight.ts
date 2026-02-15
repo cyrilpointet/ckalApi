@@ -16,6 +16,9 @@ export default class Weight extends BaseModel {
   @column()
   declare value: number
 
+  @column.date()
+  declare date: DateTime
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

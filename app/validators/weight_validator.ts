@@ -10,10 +10,12 @@ export const indexWeightQuerySchema = z.object({
 
 export const createWeightSchema = z.object({
   value: z.number().positive().max(1000),
+  date: z.coerce.date(),
 })
 
 export const updateWeightSchema = z.object({
-  value: z.number().positive().max(1000),
+  value: z.number().positive().max(1000).optional(),
+  date: z.coerce.date().optional(),
 })
 
 export type CreateWeightData = z.infer<typeof createWeightSchema>
