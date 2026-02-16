@@ -22,6 +22,7 @@ export const createProductSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().nullable().optional(),
   kcal: z.number().int().nonnegative(),
+  barcode: z.string().nullable().optional(),
   isRecipe: z.boolean().optional().default(false),
 })
 
@@ -29,6 +30,7 @@ export const updateProductSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   description: z.string().nullable().optional(),
   kcal: z.number().int().nonnegative().optional(),
+  barcode: z.string().nullable().optional(),
   isRecipe: z.boolean().optional(),
 })
 

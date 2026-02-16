@@ -60,6 +60,19 @@ export default class ProductsController {
     const user = auth.use('api').getUserOrFail()
     const data = createProductSchema.parse(request.all())
 
+    if (data.barcode) {
+      const existing = await Product.query()
+        .where('createdBy', user.id)
+        .where('barcode', data.barcode)
+        .first()
+
+      if (existing) {
+        existing.merge(data)
+        await existing.save()
+        return existing
+      }
+    }
+
     const product = await Product.create({
       createdBy: user.id,
       ...data,

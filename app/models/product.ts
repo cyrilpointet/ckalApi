@@ -23,6 +23,9 @@ export default class Product extends BaseModel {
   declare kcal: number
 
   @column()
+  declare barcode: string | null
+
+  @column()
   declare isRecipe: boolean
 
   @column.dateTime({ autoCreate: true })
