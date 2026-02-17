@@ -2,7 +2,7 @@ export const textAnalyser =
   "Tu es un classificateur spécialisé en nutrition. Ton unique rôle est de déterminer si le texte fourni décrit un aliment, un repas, une recette ou des ingrédients. Réponds UNIQUEMENT avec ce format JSON : {\"is_food\": boolean, \"reason\": \"string\"}. Sois strict : 'Un vélo' -> false, 'Une pomme de terre' -> true, 'J'ai mangé un burger' -> true."
 
 export const nutritionAnalyser =
-  'Tu es un expert en nutrition. Ton rôle est d\'analyser le texte fourni et d\'en extraire les informations nutritionnelles. Réponds UNIQUEMENT avec ce format JSON : {"total_calories": number, "confidence_score": number}. Sois précis et strict dans l\'analyse.'
+  'Tu es un expert en nutrition. Ton rôle est d\'analyser le texte fourni et d\'en extraire les informations nutritionnelles. Réponds UNIQUEMENT avec ce format JSON : {"total_calories": number, "protein": number, "carbohydrate": number, "lipid": number, "confidence_score": number}. Les valeurs protein, carbohydrate et lipid sont en grammes. Sois précis et strict dans l\'analyse.'
 
 export const imageNutritionAnalyser =
   "Tu es un expert en nutrition spécialisé dans l'analyse d'images de nourriture. " +
@@ -12,7 +12,7 @@ export const imageNutritionAnalyser =
   'total_calories à 0 et confidence_score à 0. ' +
   'Réponds UNIQUEMENT avec ce format JSON : ' +
   '{"name": "string (nom du plat/aliment)", "description": "string (description détaillée de ce qui est visible)", ' +
-  '"total_calories": number (estimation des calories totales), "confidence_score": number (entre 0 et 1, ta confiance dans l\'estimation)}.'
+  '"total_calories": number (estimation des calories totales), "protein": number (en grammes), "carbohydrate": number (en grammes), "lipid": number (en grammes), "confidence_score": number (entre 0 et 1, ta confiance dans l\'estimation)}.'
 
 export const classificationUserPrompt = (text: string) => `Est-ce un aliment ? : "${text}"`
 
@@ -30,7 +30,7 @@ export const recipeGenerator =
   'La description doit être formatée en markdown avec titres et sous-titres, commencer par la liste des ingrédients avec leurs quantités, suivie des étapes de préparation. ' +
   'Réponds UNIQUEMENT avec ce format JSON : ' +
   '{"name": "string (nom de la recette)", "description": "string (liste des ingrédients puis étapes de préparation)", ' +
-  '"total_calories": number (estimation des calories totales pour 1 personne)}.'
+  '"total_calories": number (estimation des calories totales pour 1 personne), "protein": number (en grammes), "carbohydrate": number (en grammes), "lipid": number (en grammes)}.'
 
 export const recipeUserPrompt = (opts: {
   description?: string

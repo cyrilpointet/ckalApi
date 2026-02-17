@@ -12,6 +12,9 @@ export const pictureNutritionSchema = z.object({
   name: z.string(),
   description: z.string(),
   total_calories: z.number(),
+  protein: z.number(),
+  carbohydrate: z.number(),
+  lipid: z.number(),
   confidence_score: z.number(),
 })
 
@@ -27,4 +30,7 @@ export const recipeResponseSchema = z.object({
   name: z.string(),
   description: z.string(),
   total_calories: z.number(),
+  protein: z.number(),
+  carbohydrate: z.number(),
+  lipid: z.number(),
 })

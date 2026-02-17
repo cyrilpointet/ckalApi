@@ -16,6 +16,9 @@ const offApiResponseSchema = z.object({
         .object({
           'energy-kcal_100g': z.number().optional(),
           'energy-kcal': z.number().optional(),
+          'proteins_100g': z.number().optional(),
+          'carbohydrates_100g': z.number().optional(),
+          'fat_100g': z.number().optional(),
         })
         .optional(),
     })
@@ -42,17 +45,25 @@ export default class OpenFoodFactsService {
     }
 
     const product = parsed.product
-    console.log('Fetched product from OFF:', product)
     const kcalPer100g =
       product.nutriments?.['energy-kcal_100g'] ?? product.nutriments?.['energy-kcal'] ?? 0
+    const proteinPer100g = product.nutriments?.['proteins_100g'] ?? 0
+    const carbPer100g = product.nutriments?.['carbohydrates_100g'] ?? 0
+    const fatPer100g = product.nutriments?.['fat_100g'] ?? 0
     const weight = product.product_quantity ?? 0
     const kcal = weight > 0 ? Math.round((kcalPer100g * weight) / 100) : 0
+    const protein = weight > 0 ? Math.round(((proteinPer100g * weight) / 100) * 100) / 100 : 0
+    const carbohydrate = weight > 0 ? Math.round(((carbPer100g * weight) / 100) * 100) / 100 : 0
+    const lipid = weight > 0 ? Math.round(((fatPer100g * weight) / 100) * 100) / 100 : 0
 
     return {
       name: product.product_name || 'Unknown',
       description: [product.generic_name, product.quantity].filter(Boolean).join(' - '),
       weight,
       kcal,
+      protein,
+      carbohydrate,
+      lipid,
     }
   }
 }

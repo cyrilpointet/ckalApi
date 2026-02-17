@@ -9,6 +9,9 @@ export const offProductSchema = z.object({
   description: z.string(),
   weight: z.number(),
   kcal: z.number(),
+  protein: z.number(),
+  carbohydrate: z.number(),
+  lipid: z.number(),
 })
 
 export type OffProduct = z.infer<typeof offProductSchema>

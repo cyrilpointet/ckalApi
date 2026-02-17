@@ -28,6 +28,15 @@ export default class Product extends BaseModel {
   @column()
   declare isRecipe: boolean
 
+  @column()
+  declare protein: number | null
+
+  @column()
+  declare carbohydrate: number | null
+
+  @column()
+  declare lipid: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -24,6 +24,9 @@ export const createProductSchema = z.object({
   kcal: z.number().int().nonnegative(),
   barcode: z.string().nullable().optional(),
   isRecipe: z.boolean().optional().default(false),
+  protein: z.number().nonnegative().nullable().optional(),
+  carbohydrate: z.number().nonnegative().nullable().optional(),
+  lipid: z.number().nonnegative().nullable().optional(),
 })
 
 export const updateProductSchema = z.object({
@@ -32,6 +35,9 @@ export const updateProductSchema = z.object({
   kcal: z.number().int().nonnegative().optional(),
   barcode: z.string().nullable().optional(),
   isRecipe: z.boolean().optional(),
+  protein: z.number().nonnegative().nullable().optional(),
+  carbohydrate: z.number().nonnegative().nullable().optional(),
+  lipid: z.number().nonnegative().nullable().optional(),
 })
 
 export type CreateProductData = z.infer<typeof createProductSchema>

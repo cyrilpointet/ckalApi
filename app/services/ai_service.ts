@@ -25,6 +25,9 @@ const classificationSchema = z.object({
 
 const nutritionSchema = z.object({
   total_calories: z.number(),
+  protein: z.number(),
+  carbohydrate: z.number(),
+  lipid: z.number(),
   confidence_score: z.number(),
 })
 
