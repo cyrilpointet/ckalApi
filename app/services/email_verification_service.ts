@@ -35,10 +35,10 @@ export default class EmailVerificationService {
     await mail.send((message) => {
       message
         .to(user.email)
-        .from('noreply@kcal.app')
-        .subject('Vérifiez votre adresse email')
+        .from('noreply@cookmatch.app')
+        .subject('Inscription sur CookMatch - Vérification de votre adresse email')
         .html(
-          `<h1>Bienvenue sur Kcal, ${user.username} !</h1>
+          `<h1>Bienvenue sur CookMatch, ${user.username} !</h1>
           <p>Veuillez vérifier votre adresse email en cliquant sur le lien ci-dessous :</p>
           <p><a href="${verificationUrl}">Confirmer mon compte</a></p>
           <p>Ce lien expirera dans ${TOKEN_EXPIRY_HOURS} heures.</p>
