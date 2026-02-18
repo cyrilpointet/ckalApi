@@ -33,6 +33,9 @@ export default class User extends AuthFinder(BaseModel) {
   @column()
   declare isSuperadmin: boolean
 
+  @column()
+  declare isEmailVerified: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
