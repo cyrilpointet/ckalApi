@@ -7,11 +7,15 @@ import {
   loginSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '#validators/auth_validator'
 import EmailVerificationService from '#services/email_verification_service'
+import PasswordResetService from '#services/password_reset_service'
 
 export default class AuthController {
   private emailVerificationService = new EmailVerificationService()
+  private passwordResetService = new PasswordResetService()
 
   async register({ request, response }: HttpContext) {
     const data = registerSchema.parse(request.all())
@@ -125,6 +129,59 @@ export default class AuthController {
       message:
         'If an unverified account exists with this email, a verification link has been sent.',
     })
+  }
+
+  async forgotPassword({ request, response }: HttpContext) {
+    const { email } = forgotPasswordSchema.parse(request.all())
+
+    const user = await User.findBy('email', email)
+
+    if (user) {
+      const rawToken = await this.passwordResetService.createToken(user)
+      await this.passwordResetService.sendResetEmail(user, rawToken)
+    }
+
+    return response.ok({
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    })
+  }
+
+  async resetPassword({ request, response }: HttpContext) {
+    const { token, password } = resetPasswordSchema.parse(request.all())
+
+    try {
+      const user = await this.passwordResetService.resetPassword(token, password)
+      const accessToken = await User.accessTokens.create(user)
+
+      const [lastWeight, lastDailyCalorie] = await Promise.all([
+        Weight.query().where('userId', user.id).orderBy('created_at', 'desc').first(),
+        DailyCalorie.query().where('userId', user.id).orderBy('created_at', 'desc').first(),
+      ])
+
+      return response.ok({
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          isSuperadmin: user.isSuperadmin,
+        },
+        token: accessToken.toJSON(),
+        lastWeight,
+        lastDailyCalorie,
+      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'INVALID_TOKEN') {
+          return response.badRequest({ message: 'Invalid reset token.' })
+        }
+        if (error.message === 'TOKEN_EXPIRED') {
+          return response.badRequest({
+            message: 'Reset token has expired. Please request a new one.',
+          })
+        }
+      }
+      return response.internalServerError({ message: 'An error occurred during password reset.' })
+    }
   }
 
   async logout({ auth, response }: HttpContext) {

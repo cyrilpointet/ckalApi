@@ -30,6 +30,8 @@ router
     router.post('login', [AuthController, 'login'])
     router.post('verify-email', [AuthController, 'verifyEmail'])
     router.post('resend-verification', [AuthController, 'resendVerification'])
+    router.post('forgot-password', [AuthController, 'forgotPassword'])
+    router.post('reset-password', [AuthController, 'resetPassword'])
     router.post('logout', [AuthController, 'logout']).use(middleware.auth())
   })
   .prefix('auth')
