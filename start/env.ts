@@ -26,7 +26,6 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   GOOGLE_AI_API_KEY: Env.schema.string(),
 
-  SMTP_HOST: Env.schema.string({ format: 'host' }),
-  SMTP_PORT: Env.schema.number(),
+  RESEND_API_KEY: Env.schema.string(),
   FRONTEND_URL: Env.schema.string(),
 })
