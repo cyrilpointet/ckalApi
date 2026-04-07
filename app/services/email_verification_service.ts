@@ -35,7 +35,7 @@ export default class EmailVerificationService {
     await mail.send((message) => {
       message
         .to(user.email)
-        .from('noreply@cookmatch.app')
+        .from('onboarding@resend.dev')
         .subject('Inscription sur CookMatch - Vérification de votre adresse email')
         .html(
           `<h1>Bienvenue sur CookMatch, ${user.username} !</h1>

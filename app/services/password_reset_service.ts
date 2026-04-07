@@ -35,7 +35,7 @@ export default class PasswordResetService {
     await mail.send((message) => {
       message
         .to(user.email)
-        .from('noreply@cookmatch.app')
+        .from('onboarding@resend.dev')
         .subject('CookMatch - Réinitialisation de votre mot de passe')
         .html(
           `<h1>Réinitialisation de mot de passe</h1>
